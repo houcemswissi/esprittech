@@ -162,6 +162,46 @@ class UserRegisterSerializer(serializers.Serializer):
         return user """   
 
 
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name', 'birth_date', 'role')
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+    
+class StudentSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Student
+        fields = ('id', 'user', 'student_cv', 'student_linkedin', 'student_graduation_year', 'school_class_level')
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user_data['role'] = Role.STUDENT.value
+        user = UserSerializer().create(user_data)
+        student = Student.objects.create(user=user, **validated_data)
+        return student
+    
+class TeacherSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Teacher
+        fields = ('id', 'user', 'up', 'research_team', 'is_head_supervisor')
+
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        user_data['role'] = Role.TEACHER.value
+        user = UserSerializer().create(user_data)
+        teacher = Teacher.objects.create(user=user, **validated_data)
+        return teacher
+    
 
 
 

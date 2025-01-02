@@ -27,6 +27,7 @@ router.register(r'users', UserViewSet ,  basename='user')
 router.register(r'teachers', TeacherViewSet ,  basename='teacher')
 router.register(r'students', StudentViewSet ,  basename='student')
 
+
 """urlpatterns = [
     path("", index, name="index"),
     path('login/', LoginView.as_view(), name="login"),
@@ -52,5 +53,8 @@ urlpatterns += [
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('register/', UserRegisterView.as_view(), name='user-register'),
+    #path('register/', UserRegisterView.as_view(), name='user-register'),
+    path('register/student/', RegisterStudentView.as_view(), name='register_student'),
+    path('register/teacher/', RegisterTeacherView.as_view(), name='register_teacher'),
+    path('login/', LoginView.as_view(), name='login'),
 ]

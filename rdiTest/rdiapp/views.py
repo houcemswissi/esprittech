@@ -1,9 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-<<<<<<< HEAD
 from .forms import RoleForm
-=======
->>>>>>> 6b3073d0fb68ce09a0dad94671055bba18760aaf
 from rest_framework import generics , permissions , viewsets
 from rdiapp.permissions import IsOwnerOrReadOnly
 from rdiapp.models import *
@@ -14,13 +11,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from django.contrib.auth import get_user_model
-<<<<<<< HEAD
+from django.contrib.auth import get_user_model , authenticate, login
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-=======
->>>>>>> 6b3073d0fb68ce09a0dad94671055bba18760aaf
 
 # Create your views here.
 
@@ -35,7 +29,6 @@ def index(request):
 def index(request):
     return render(request, 'index.html') 
 """
-<<<<<<< HEAD
 
 
 
@@ -51,8 +44,6 @@ def choose_role(request):
         form = RoleForm()
     
     return render(request, 'choose_role.html', {'form': form})
-=======
->>>>>>> 6b3073d0fb68ce09a0dad94671055bba18760aaf
 
 
 
@@ -77,31 +68,79 @@ class UserRegisterView(generics.CreateAPIView):
             "message": "User registered successfully",
         }, status=status.HTTP_201_CREATED)
         """
+class RegisterStudentView(generics.CreateAPIView):
+    serializer_class = StudentSerializer
+    permission_classes = [permissions.AllowAny]
+
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class RegisterStudentView(generics.CreateAPIView):
+    
+    serializer_class = StudentSerializer
+    permission_classes = [permissions.AllowAny]
+    """def post(self, request, *args, **kwargs):
+                student_serializer = generated_serializers["StudentSerializer"](data={'user': User.id, 'student_id': request.data.get('student_id'), 'role': 'student'})
+                if student_serializer.is_valid():
+                    student_serializer.save()
+                else:
+                    return Response(student_serializer.errors, status=status.HTTP_400_BAD_REQUEST)"""
 
 
+class RegisterTeacherView(generics.CreateAPIView):
+    serializer_class = TeacherSerializer
+    permission_classes = [permissions.AllowAny]
 
-class UserRegisterView(APIView):
-    def post(self, request, *args, **kwargs):
+class UserRegisterView(generics.CreateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
+    """def post(self, request, *args, **kwargs):
         user_serializer = generated_serializers["UserSerializer"](data=request.data)
         if user_serializer.is_valid():
             user = user_serializer.save()
             role = request.data.get('role')
-            
             if role == 'student':
-                student_serializer = generated_serializers["StudentSerializer"](data={'user': user.id, 'student_id': request.data.get('student_id')})
+                return RegisterStudentView(User)
+                student_serializer = generated_serializers["StudentSerializer"](data={'user': user.id, 'student_id': request.data.get('student_id'), 'role': 'student'})
                 if student_serializer.is_valid():
                     student_serializer.save()
                 else:
                     return Response(student_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
             elif role == 'teacher':
-                teacher_serializer = generated_serializers["TeacherSerializer"](data={'user': user.id, 'teacher_id': request.data.get('teacher_id')})
+                return RegisterStudentView(User)
+                teacher_serializer = generated_serializers["TeacherSerializer"](data={'user': user.id, 'teacher_id': request.data.get('teacher_id'), 'role': 'teacher'})
                 if teacher_serializer.is_valid():
                     teacher_serializer.save()
                 else:
                     return Response(teacher_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)"""
+    
+
+
+
+
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        user = authenticate(email=email, password=password)
+
+        if user is not None:
+            login(request, user)
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+        else:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 # ViewSet for the User model
 class UserViewSet(viewsets.ModelViewSet):
